@@ -1,0 +1,2447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetLab Educacional — Plataforma para ensino de redes e segurança</title>
+    <meta name="description"
+        content="Ferramenta desktop gratuita para captura e análise de tráfego de rede, topologia interativa e laboratório de segurança web. Desenvolvido como Trabalho de Conclusão de Curso no IFFar — Campus Uruguaiana.">
+    <meta name="author" content="Yuri Gonçalves Pavão">
+    <meta name="theme-color" content="#07111c">
+    <meta property="og:title" content="NetLab Educacional">
+    <meta property="og:description"
+        content="Plataforma desktop para ensino de redes de computadores, análise de tráfego e segurança web.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yurigonpav.github.io/NetLab-Educacional/">
+    <meta property="og:image" content="https://yurigonpav.github.io/NetLab-Educacional/assets/SITE.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #07111c;
+            --bg-alt: #0c1b2b;
+            --panel: rgba(10, 20, 33, 0.88);
+            --panel-strong: rgba(15, 31, 48, 0.96);
+            --line: rgba(112, 178, 255, 0.16);
+            --line-strong: rgba(112, 178, 255, 0.32);
+            --text: #edf4ff;
+            --muted: #9cb5d1;
+            --accent: #5ec6ff;
+            --accent-strong: #1492df;
+            --accent-soft: rgba(94, 198, 255, 0.14);
+            --success: #42d392;
+            --danger: #ff8d8d;
+            --warning: #ffd36a;
+            --shadow: 0 24px 60px rgba(0, 0, 0, 0.34);
+            --shadow-lg: 0 32px 80px rgba(0, 0, 0, 0.48);
+            --radius-lg: 26px;
+            --radius-md: 22px;
+            --radius-sm: 16px;
+            --radius-pill: 999px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 100px;
+        }
+
+        body {
+            font-family: "Segoe UI", "Trebuchet MS", system-ui, -apple-system, sans-serif;
+            background:
+                radial-gradient(circle at 15% 10%, rgba(94, 198, 255, 0.18), transparent 38%),
+                radial-gradient(circle at 85% 20%, rgba(66, 211, 146, 0.12), transparent 32%),
+                radial-gradient(circle at 50% 70%, rgba(20, 146, 223, 0.08), transparent 44%),
+                linear-gradient(180deg, #06101a 0%, #091522 45%, #050d15 100%);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                linear-gradient(120deg, rgba(94, 198, 255, 0.04), transparent 44%),
+                linear-gradient(300deg, rgba(66, 211, 146, 0.03), transparent 38%);
+        }
+
+        .page-shell {
+            position: relative;
+            z-index: 1;
+            width: min(1200px, 94%);
+            margin: 0 auto;
+            padding: 0 8px;
+        }
+
+        /* ── Skip link ──────────────────────────── */
+        .skip-link {
+            position: fixed;
+            top: -72px;
+            left: 24px;
+            z-index: 100;
+            padding: 10px 18px;
+            border-radius: var(--radius-pill);
+            background: var(--accent);
+            color: #07111c;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            box-shadow: var(--shadow);
+            transition: top 0.25s ease;
+        }
+
+        .skip-link:focus {
+            top: 20px;
+            outline: 3px solid rgba(94, 198, 255, 0.72);
+            outline-offset: 3px;
+        }
+
+        /* ── Header / Nav ──────────────────────── */
+        .topbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 18px;
+            justify-content: space-between;
+            padding: 16px 24px;
+            margin-top: 20px;
+            margin-bottom: 28px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            background: rgba(8, 18, 29, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 16px;
+            z-index: 50;
+        }
+
+        .brand-block {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .brand-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-kicker {
+            font-size: 10px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+        }
+
+        .brand-copy strong {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .nav-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 16px;
+            border-radius: var(--radius-pill);
+            border: 1px solid transparent;
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+            border-color: var(--line-strong);
+            background: rgba(255, 255, 255, 0.08);
+            text-decoration: none;
+        }
+
+        .nav-link.nav-cta {
+            background: linear-gradient(135deg, #76d6ff 0%, #3eb7ff 100%);
+            color: #07111c;
+            font-weight: 700;
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 6px 20px rgba(62, 183, 255, 0.22);
+        }
+
+        .nav-link.nav-cta:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 28px rgba(62, 183, 255, 0.32);
+            color: #07111c;
+        }
+
+        /* ── Hero ──────────────────────────────── */
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+            gap: 24px;
+            padding: 36px 32px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--line);
+            background: linear-gradient(180deg, rgba(16, 34, 53, 0.94), rgba(8, 18, 29, 0.94));
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 28px;
+            align-items: center;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            color: var(--accent);
+            font-size: 11px;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .hero-eyebrow::before {
+            content: "";
+            width: 28px;
+            height: 1px;
+            background: currentColor;
+            opacity: 0.85;
+        }
+
+        .hero h1 {
+            color: var(--text);
+            font-size: clamp(32px, 4.5vw, 48px);
+            line-height: 1.08;
+            margin-bottom: 16px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .hero h1 .highlight {
+            background: linear-gradient(135deg, #76d6ff 0%, #3eb7ff 70%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-lead {
+            color: var(--muted);
+            font-size: 17px;
+            line-height: 1.65;
+            max-width: 58ch;
+            margin-bottom: 24px;
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 50px;
+            padding: 12px 26px;
+            border-radius: var(--radius-pill);
+            border: 1px solid transparent;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.22s ease;
+            color: #07111c;
+            background: linear-gradient(135deg, #76d6ff 0%, #3eb7ff 100%);
+            border-color: rgba(255, 255, 255, 0.10);
+            box-shadow: 0 10px 28px rgba(62, 183, 255, 0.26);
+            white-space: nowrap;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 16px 36px rgba(62, 183, 255, 0.34);
+            text-decoration: none;
+            color: #07111c;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+            box-shadow: 0 6px 18px rgba(62, 183, 255, 0.20);
+        }
+
+        .btn-ghost {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 50px;
+            padding: 12px 26px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--line);
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.22s ease;
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.04);
+            white-space: nowrap;
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255, 255, 255, 0.09);
+            border-color: var(--line-strong);
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .hero-panel {
+            padding: 28px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .hero-panel h3 {
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 0.10em;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .stat {
+            padding: 14px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.03);
+            text-align: center;
+        }
+
+        .stat strong {
+            display: block;
+            color: var(--text);
+            font-size: 20px;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .stat span {
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        .version-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgb(215, 0, 0);
+            background: rgba(132, 20, 20, 0.504);
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .os-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(66, 211, 146, 0.22);
+            background: rgba(66, 211, 146, 0.08);
+            color: var(--success);
+            font-size: 13px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        /* ── Seções ────────────────────────────── */
+        .section {
+            margin-bottom: 28px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .section-header .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: var(--accent);
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .section-header .eyebrow::before,
+        .section-header .eyebrow::after {
+            content: "";
+            width: 32px;
+            height: 1px;
+            background: currentColor;
+            opacity: 0.70;
+        }
+
+        .section-header h2 {
+            color: var(--text);
+            font-size: clamp(26px, 3.5vw, 36px);
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .section-header p {
+            color: var(--muted);
+            font-size: 16px;
+            max-width: 60ch;
+            margin: 0 auto;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            padding: 26px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: var(--shadow);
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--line-strong);
+            transform: translateY(-2px);
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(94, 198, 255, 0.10);
+            border: 1px solid rgba(94, 198, 255, 0.16);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+
+        .card h3 {
+            color: var(--text);
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* ── Requisitos ────────────────────────── */
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .req-card {
+            padding: 24px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .req-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .req-card h4 {
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .req-card p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* ── Instalação ────────────────────────── */
+        .steps-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            counter-reset: step;
+        }
+
+        .steps-list li {
+            counter-increment: step;
+            padding: 22px 24px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
+            display: flex;
+            gap: 18px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(94, 198, 255, 0.25), rgba(20, 146, 223, 0.12));
+            border: 1px solid rgba(94, 198, 255, 0.28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: var(--text);
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .step-content p {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.55;
+        }
+
+        .step-content code {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.32);
+            color: #b7ffcf;
+            font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+            font-size: 13px;
+            margin-top: 6px;
+            word-break: break-all;
+        }
+
+        /* ── Aviso ético ───────────────────────── */
+        .aviso-box {
+            padding: 24px 28px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 141, 141, 0.24);
+            background: rgba(255, 141, 141, 0.08);
+            color: #ffb1b1;
+            font-size: 14px;
+            line-height: 1.6;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .aviso-box .aviso-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .aviso-box strong {
+            color: var(--danger);
+        }
+
+        /* ── Tabela de protocolos ────────────────── */
+        .protocol-table-wrap {
+            overflow-x: auto;
+            margin-top: 8px;
+        }
+
+        .protocol-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .protocol-table th {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--muted);
+            padding: 10px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .protocol-table td {
+            padding: 10px 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text);
+        }
+
+        .protocol-table tr:hover td {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* ════════════════════════════════════════
+           NOVAS SEÇÕES
+        ════════════════════════════════════════ */
+
+        /* ── Galeria / Mídia ───────────────────── */
+        .media-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .media-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .media-tab-btn:hover,
+        .media-tab-btn.active {
+            background: rgba(94, 198, 255, 0.12);
+            border-color: rgba(94, 198, 255, 0.35);
+            color: var(--accent);
+        }
+
+        .media-tab-btn .tab-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.6;
+        }
+
+        .media-tab-btn.active .tab-dot {
+            opacity: 1;
+        }
+
+        .video-embed-wrap {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--line);
+            background: rgba(0, 0, 0, 0.4);
+            margin-bottom: 16px;
+        }
+
+        .video-embed-wrap iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Placeholder enquanto não há vídeo */
+        .video-placeholder {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            color: var(--muted);
+            background: rgba(8, 18, 29, 0.7);
+        }
+
+        .video-placeholder svg {
+            opacity: 0.4;
+        }
+
+        .video-placeholder p {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .screenshot-card {
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: var(--panel);
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .screenshot-card:hover {
+            border-color: var(--line-strong);
+            transform: translateY(-3px);
+            box-shadow: 0 20px 48px rgba(0, 0, 0, 0.4);
+        }
+
+        .screenshot-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, rgba(94, 198, 255, 0.08), rgba(20, 146, 223, 0.04));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Simulação visual de cada aba do software */
+        .screenshot-thumb .mockup-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 28px;
+            background: rgba(8, 18, 29, 0.9);
+            border-bottom: 1px solid rgba(94, 198, 255, 0.12);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 12px;
+        }
+
+        .mockup-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .mockup-content {
+            position: absolute;
+            top: 28px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screenshot-info {
+            padding: 14px 18px;
+            border-top: 1px solid var(--line);
+        }
+
+        .screenshot-info h4 {
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .screenshot-info p {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        /* ── Dialog / Lightbox ─────────────────── */
+        dialog.lightbox {
+            background: transparent;
+            border: none;
+            padding: 0;
+            max-width: 90vw;
+            max-height: 90vh;
+            outline: none;
+        }
+
+        dialog.lightbox::backdrop {
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(8px);
+        }
+
+        .lightbox-inner {
+            position: relative;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--line-strong);
+            background: var(--panel-strong);
+            padding: 24px;
+            max-width: 900px;
+        }
+
+        .lightbox-inner img {
+            display: block;
+            max-width: 100%;
+            border-radius: var(--radius-sm);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s ease;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--text);
+        }
+
+        /* ── FAQ ───────────────────────────────── */
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .faq-item {
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: var(--panel);
+            overflow: hidden;
+            transition: border-color 0.2s ease;
+        }
+
+        .faq-item.open {
+            border-color: rgba(94, 198, 255, 0.28);
+        }
+
+        .faq-question {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 20px 24px;
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: color 0.2s ease;
+        }
+
+        .faq-question:hover {
+            color: var(--accent);
+        }
+
+        .faq-item.open .faq-question {
+            color: var(--accent);
+        }
+
+        .faq-chevron {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            color: var(--muted);
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.open .faq-chevron {
+            transform: rotate(180deg);
+            color: var(--accent);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+        }
+
+        .faq-answer-inner {
+            padding: 0 24px 20px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.65;
+            border-top: 1px solid var(--line);
+            padding-top: 16px;
+        }
+
+        .faq-answer-inner a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .faq-answer-inner a:hover {
+            text-decoration: underline;
+        }
+
+        /* ── Sobre o Autor ──────────────────────── */
+        .author-card {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+            padding: 32px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--line);
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .author-avatar {
+            width: 88px;
+            height: 88px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(94, 198, 255, 0.30), rgba(20, 146, 223, 0.15));
+            border: 2px solid rgba(94, 198, 255, 0.30);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--accent);
+            box-shadow: 0 0 0 6px rgba(94, 198, 255, 0.07);
+        }
+
+        .author-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .author-info {
+            flex: 1;
+        }
+
+        .author-role {
+            font-size: 11px;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .author-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .author-school {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .author-course {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 18px;
+            opacity: 0.8;
+        }
+
+        .author-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .author-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 8px 16px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--line);
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: 0.2s ease;
+        }
+
+        .author-link:hover {
+            border-color: var(--line-strong);
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.07);
+            text-decoration: none;
+        }
+
+        .author-link.highlight-link {
+            border-color: rgba(94, 198, 255, 0.28);
+            background: rgba(94, 198, 255, 0.08);
+            color: var(--accent);
+        }
+
+        .author-link.highlight-link:hover {
+            background: rgba(94, 198, 255, 0.15);
+        }
+
+        /* ── Doações / Pix ──────────────────────── */
+        .pix-card {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 32px;
+            align-items: center;
+            padding: 32px;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(66, 211, 146, 0.22);
+            background: linear-gradient(135deg, rgba(66, 211, 146, 0.06), rgba(20, 146, 223, 0.04));
+            box-shadow: var(--shadow);
+        }
+
+        .pix-text .pix-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: var(--success);
+            font-size: 11px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .pix-text h2 {
+            color: var(--text);
+            font-size: clamp(22px, 3vw, 28px);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .pix-text p {
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.65;
+            max-width: 52ch;
+            margin-bottom: 20px;
+        }
+
+        .pix-key-block {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(66, 211, 146, 0.20);
+            background: rgba(66, 211, 146, 0.06);
+            width: fit-content;
+        }
+
+        .pix-key-label {
+            font-size: 11px;
+            color: var(--success);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.10em;
+            white-space: nowrap;
+        }
+
+        .pix-key-value {
+            font-family: "Cascadia Code", "Fira Code", Consolas, monospace;
+            font-size: 14px;
+            color: var(--text);
+            letter-spacing: 0.02em;
+        }
+
+        .pix-copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: var(--radius-pill);
+            border: 1px solid rgba(66, 211, 146, 0.28);
+            background: rgba(66, 211, 146, 0.10);
+            color: var(--success);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .pix-copy-btn:hover {
+            background: rgba(66, 211, 146, 0.18);
+        }
+
+        .pix-copy-btn.copied {
+            background: rgba(66, 211, 146, 0.22);
+            border-color: var(--success);
+        }
+
+        .pix-qr {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pix-qr-box {
+            width: 140px;
+            height: 140px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(66, 211, 146, 0.22);
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 8px;
+        }
+
+        .pix-qr-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* Placeholder QR quando não há imagem */
+        .pix-qr-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            height: 100%;
+            background: rgba(66, 211, 146, 0.06);
+            border-radius: var(--radius-sm);
+        }
+
+        .pix-qr-placeholder svg {
+            color: rgba(66, 211, 146, 0.5);
+        }
+
+        .pix-qr-placeholder span {
+            font-size: 10px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .pix-qr-label {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        /* ── Footer ────────────────────────────── */
+        .site-footer {
+            margin-top: 40px;
+            padding: 32px 0 24px;
+            border-top: 1px solid var(--line);
+            text-align: center;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .site-footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .site-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 18px;
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+
+        .footer-links a {
+            color: var(--muted);
+            font-size: 13px;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--text);
+        }
+
+        /* ── Responsivo ────────────────────────── */
+        @media (max-width: 920px) {
+            .hero {
+                grid-template-columns: 1fr;
+                padding: 24px 20px;
+            }
+
+            .hero-panel {
+                order: -1;
+            }
+
+            .topbar {
+                padding: 14px 16px;
+                gap: 10px;
+            }
+
+            .nav-strip {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .brand-copy strong {
+                font-size: 16px;
+            }
+
+            .stat-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .pix-card {
+                grid-template-columns: 1fr;
+            }
+
+            .pix-qr {
+                flex-direction: row;
+                align-self: flex-start;
+            }
+
+            .author-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .author-links {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 0;
+            }
+
+            .page-shell {
+                width: 96%;
+            }
+
+            .hero h1 {
+                font-size: 26px;
+            }
+
+            .hero-lead {
+                font-size: 15px;
+            }
+
+            .btn-primary,
+            .btn-ghost {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stat-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .cards-grid,
+            .requirements-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .os-badge {
+                margin-left: 0;
+                margin-top: 8px;
+            }
+
+            .version-badge {
+                display: flex;
+                margin-top: 8px;
+            }
+
+            .pix-card {
+                padding: 24px 20px;
+            }
+
+            .screenshots-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Animações sutis ───────────────────── */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-in {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.1s;
+            opacity: 0;
+        }
+
+        .delay-2 {
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+
+        .delay-3 {
+            animation-delay: 0.3s;
+            opacity: 0;
+        }
+
+        .delay-4 {
+            animation-delay: 0.4s;
+            opacity: 0;
+        }
+
+        /* ── Foco visível ──────────────────────── */
+        a:focus-visible,
+        button:focus-visible {
+            outline: 3px solid rgba(94, 198, 255, 0.72);
+            outline-offset: 4px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <a class="skip-link" href="#conteudo-principal">Pular para conteúdo</a>
+
+    <div class="page-shell">
+        <!-- ═══════════ HEADER ═══════════ -->
+        <header class="topbar" role="banner">
+            <a href="#" class="brand-block" aria-label="NetLab Educacional — Ir ao topo">
+                <img src="assets/Logo.png" alt="NetLab Educacional Logo"
+                    style="height: 36px; width: auto; object-fit: contain; border-radius: 10px;">
+                <div class="brand-copy">
+                    <span class="brand-kicker">IFFar — Campus Uruguaiana</span>
+                    <strong>NetLab Educacional</strong>
+                </div>
+            </a>
+            <nav class="nav-strip" aria-label="Navegação principal">
+                <a href="#funcionalidades" class="nav-link">Funcionalidades</a>
+                <a href="#galeria" class="nav-link">Galeria</a>
+                <a href="#requisitos" class="nav-link">Requisitos</a>
+                <a href="#instalacao" class="nav-link">Instalação</a>
+                <a href="#faq" class="nav-link">FAQ</a>
+                <a href="download/NetLab_Educacional_v5.0.0.exe"
+                    class="nav-link nav-cta">Baixar o instalador</a>
+            </nav>
+        </header>
+
+        <main id="conteudo-principal" tabindex="-1">
+
+            <!-- ══════════ HERO ══════════ -->
+            <section class="hero animate-in" aria-labelledby="hero-titulo">
+                <div>
+                    <span class="hero-eyebrow">Trabalho de Conclusão de Curso</span>
+                    <h1 id="hero-titulo">
+                        Plataforma desktop para
+                        <span class="highlight">ensino de redes</span>
+                        e segurança web
+                    </h1>
+                    <p class="hero-lead">
+                        Capture tráfego em tempo real, explore a topologia da sua rede,
+                        entenda protocolos com explicações didáticas e experimente
+                        um laboratório de vulnerabilidades web — tudo em ambiente
+                        controlado, offline e seguro.
+                    </p>
+                    <div class="hero-actions">
+                        <a href="download/NetLab_Educacional_v5.0.0.exe"
+                            class="btn-primary" id="btn-download-principal">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Baixar o instalador
+                        </a>
+                        <a href="https://github.com/Yurigonpav/NetLab-Educacional" class="btn-ghost" target="_blank"
+                            rel="noopener noreferrer">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path
+                                    d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z" />
+                            </svg>
+                            Ver no GitHub
+                        </a>
+                        <a href="#artigo" class="btn-ghost">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="16" y1="13" x2="8" y2="13" />
+                                <line x1="16" y1="17" x2="8" y2="17" />
+                                <polyline points="10 9 9 9 8 9" />
+                            </svg>
+                            Artigo científico
+                        </a>
+                    </div>
+                </div>
+                <aside class="hero-panel" aria-label="Resumo do projeto">
+                    <h3>Resumo do projeto</h3>
+                    <div class="stat-grid">
+                        <div class="stat">
+                            <strong>4</strong>
+                            <span>abas principais</span>
+                        </div>
+                        <div class="stat">
+                            <strong>13</strong>
+                            <span>protocolos analisados</span>
+                        </div>
+                        <div class="stat">
+                            <strong>7</strong>
+                            <span>vulnerabilidades web</span>
+                        </div>
+                        <div class="stat">
+                            <strong>~70 MB</strong>
+                            <span>tamanho do instalador</span>
+                        </div>
+                    </div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+                        <span class="version-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                                <polyline points="2 17 12 22 22 17"></polyline>
+                                <polyline points="2 12 12 17 22 12"></polyline>
+                            </svg>
+                            v5.0
+                        </span>
+                        <span class="os-badge">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                <line x1="8" y1="21" x2="16" y2="21"></line>
+                                <line x1="12" y1="17" x2="12" y2="21"></line>
+                            </svg>
+                            Windows 10/11
+                        </span>
+                    </div>
+                    <p style="color:var(--muted);font-size:12px;margin-top:14px;line-height:1.5;">
+                        Desenvolvido como Trabalho de Conclusão de Curso Técnico em Informática
+                        no <strong style="color:var(--text);">IFFar — Campus Uruguaiana</strong>.
+                        Atualizado em Maio de 2026.
+                    </p>
+                </aside>
+            </section>
+
+            <!-- ══════════ FUNCIONALIDADES ══════════ -->
+            <section class="section animate-in delay-1" id="funcionalidades" aria-labelledby="sec-func">
+                <div class="section-header">
+                    <span class="eyebrow">O que o NetLab oferece</span>
+                    <h2 id="sec-func">Funcionalidades principais</h2>
+                    <p>Ferramentas integradas para captura, visualização e interpretação de tráfego de rede com foco
+                        educacional.</p>
+                </div>
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                            </svg>
+                        </div>
+                        <h3>Captura em tempo real</h3>
+                        <p>Capture pacotes IPv4, ARP e ICMP com Scapy e Npcap em thread dedicada, sem travar a
+                            interface. Selecione a interface de rede diretamente pelo painel.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="16" y="16" width="6" height="6" rx="1" />
+                                <rect x="2" y="16" width="6" height="6" rx="1" />
+                                <rect x="9" y="2" width="6" height="6" rx="1" />
+                                <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" />
+                                <path d="M12 12V8" />
+                            </svg>
+                        </div>
+                        <h3>Topologia interativa</h3>
+                        <p>Visualize dispositivos da rede local, conexões e sub-redes em um grafo com zoom, arraste e
+                            painel de detalhes. Apelide hosts e identifique fabricantes por MAC.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="20" x2="12" y2="10" />
+                                <line x1="18" y1="20" x2="18" y2="4" />
+                                <line x1="6" y1="20" x2="6" y2="16" />
+                            </svg>
+                        </div>
+                        <h3>Métricas de tráfego</h3>
+                        <p>Acompanhe KB/s em tempo real com gráfico suavizado, ranking de protocolos e dispositivos por
+                            volume. Pause e navegue pelo histórico sem interromper a captura.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-2.04Z" />
+                                <path
+                                    d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-2.04Z" />
+                            </svg>
+                        </div>
+                        <h3>Modo Análise pedagógico</h3>
+                        <p>Cada evento de rede ganha explicação em linguagem acessível, evidências técnicas extraídas do
+                            pacote e contexto prático. Classificação por severidade e protocolo.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        </div>
+                        <h3>Laboratório de segurança</h3>
+                        <p>Servidor HTTP vulnerável integrado com SQL Injection, XSS, IDOR, CSRF e mais. Banco em
+                            memória, dados descartados ao parar. Ideal para demonstrações em sala.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon" aria-hidden="true">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m16 6 4 14" />
+                                <path d="M12 6v14" />
+                                <path d="M8 6 4 20" />
+                                <path d="M2 3h20" />
+                            </svg>
+                        </div>
+                        <h3>Diagnóstico integrado</h3>
+                        <p>Verifique privilégios, versão do Npcap, saúde da interface, latência do gateway e resolução
+                            DNS. Exporte relatório completo em texto.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════ PROTOCOLOS ══════════ -->
+            <section class="section animate-in delay-1" aria-labelledby="sec-prot">
+                <div class="card" style="padding:28px;">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+                        <span class="hero-eyebrow" style="margin-bottom:0;">Análise profunda</span>
+                    </div>
+                    <h2 id="sec-prot" style="margin-bottom:8px;">Protocolos analisados</h2>
+                    <p style="color:var(--muted);margin-bottom:16px;">O NetLab classifica e explica cada protocolo
+                        encontrado na rede.</p>
+                    <div class="protocol-table-wrap">
+                        <table class="protocol-table">
+                            <thead>
+                                <tr>
+                                    <th>Protocolo</th>
+                                    <th>Tratamento</th>
+                                    <th>Exemplo de evidência</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>HTTP</strong></td>
+                                    <td>DPI completa</td>
+                                    <td>Método, host, headers, formulários, credenciais em texto claro</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>HTTPS</strong></td>
+                                    <td>Metadados e contexto</td>
+                                    <td>IPs, portas, indicação de TLS</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DNS</strong></td>
+                                    <td>Consultas</td>
+                                    <td>Domínio consultado e servidor DNS</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ARP</strong></td>
+                                    <td>Descoberta local</td>
+                                    <td>IP/MAC de origem, operação request/reply</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ICMP</strong></td>
+                                    <td>Conectividade</td>
+                                    <td>Origem, destino, TTL</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DHCP</strong></td>
+                                    <td>Configuração</td>
+                                    <td>Portas, tipo DHCP, transaction ID</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>TCP</strong></td>
+                                    <td>Conexões</td>
+                                    <td>SYN, FIN, RST — handshake e encerramento</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>SSH / FTP / SMB / RDP</strong></td>
+                                    <td>Serviços remotos</td>
+                                    <td>IPs, portas, risco operacional</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════ GALERIA / MÍDIA ══════════ -->
+            <section class="section animate-in delay-2" id="galeria" aria-labelledby="sec-galeria">
+                <div class="section-header">
+                    <span class="eyebrow">Veja na prática</span>
+                    <h2 id="sec-galeria">Galeria do software</h2>
+                    <p>Explore os módulos do NetLab Educacional em funcionamento real.</p>
+                </div>
+
+                <!-- Abas de navegação -->
+                <div class="media-tabs" role="tablist" aria-label="Módulos do software">
+                    <button class="media-tab-btn active" role="tab" aria-selected="true" data-tab="topologia">
+                        <span class="tab-dot"></span> Topologia
+                    </button>
+                    <button class="media-tab-btn" role="tab" aria-selected="false" data-tab="trafego">
+                        <span class="tab-dot"></span> Tráfego
+                    </button>
+                    <button class="media-tab-btn" role="tab" aria-selected="false" data-tab="analise">
+                        <span class="tab-dot"></span> Modo Análise
+                    </button>
+                    <button class="media-tab-btn" role="tab" aria-selected="false" data-tab="servidor">
+                        <span class="tab-dot"></span> Servidor
+                    </button>
+                    <button class="media-tab-btn" role="tab" aria-selected="false" data-tab="site_servidor">
+                        <span class="tab-dot"></span> Site do Servidor
+                    </button>
+                </div>
+
+                <!-- Painel de screenshot por aba -->
+                <div class="card" style="padding: 24px;" id="gallery-panel">
+
+                    <!-- Topologia -->
+                    <div data-panel="topologia">
+                        <div class="screenshots-grid">
+                            <div class="screenshot-card" style="grid-column: span 2;" data-lightbox>
+                                <div class="screenshot-thumb">
+                                    <div class="mockup-bar">
+                                        <div class="mockup-dot" style="background:#ff5f57;"></div>
+                                        <div class="mockup-dot" style="background:#ffbd2e;"></div>
+                                        <div class="mockup-dot" style="background:#28c840;"></div>
+                                        <span style="margin-left:8px;font-size:11px;color:var(--muted);">NetLab
+                                            Educacional — Topologia da Rede</span>
+                                    </div>
+                                    <div class="mockup-content">
+                                        <img src="assets/TOPOLOGIA.png" alt="Topologia da Rede"
+                                            style="width:100%; height:100%; object-fit:contain;">
+                                    </div>
+                                </div>
+                                <div class="screenshot-info">
+                                    <h4>Topologia interativa da rede</h4>
+                                    <p>Mapa em grafo com até 50 dispositivos, zoom, pan e painel de detalhes por host.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tráfego -->
+                    <div data-panel="trafego" style="display:none;">
+                        <div class="screenshots-grid">
+                            <div class="screenshot-card" style="grid-column: span 2;" data-lightbox>
+                                <div class="screenshot-thumb">
+                                    <div class="mockup-bar">
+                                        <div class="mockup-dot" style="background:#ff5f57;"></div>
+                                        <div class="mockup-dot" style="background:#ffbd2e;"></div>
+                                        <div class="mockup-dot" style="background:#28c840;"></div>
+                                        <span style="margin-left:8px;font-size:11px;color:var(--muted);">NetLab
+                                            Educacional — Tráfego em Tempo Real</span>
+                                    </div>
+                                    <div class="mockup-content">
+                                        <img src="assets/TRÁFEGO.png" alt="Tráfego em Tempo Real"
+                                            style="width:100%;height:100%;object-fit:contain;">
+                                    </div>
+                                </div>
+                                <div class="screenshot-info">
+                                    <h4>Gráfico de tráfego em tempo real</h4>
+                                    <p>Taxa em KB/s com suavização EMA, buffer de 2h e navegação temporal pelo
+                                        histórico.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modo Análise -->
+                    <div data-panel="analise" style="display:none;">
+                        <div class="screenshots-grid">
+                            <div class="screenshot-card" style="grid-column: span 2;" data-lightbox>
+                                <div class="screenshot-thumb">
+                                    <div class="mockup-bar">
+                                        <div class="mockup-dot" style="background:#ff5f57;"></div>
+                                        <div class="mockup-dot" style="background:#ffbd2e;"></div>
+                                        <div class="mockup-dot" style="background:#28c840;"></div>
+                                        <span style="margin-left:8px;font-size:11px;color:var(--muted);">NetLab
+                                            Educacional — Modo Análise</span>
+                                    </div>
+                                    <div class="mockup-content">
+                                        <img src="assets/ANÁLISE.png" alt="Modo Análise"
+                                            style="width:100%;height:100%;object-fit:contain;">
+                                    </div>
+                                </div>
+                                <div class="screenshot-info">
+                                    <h4>Modo Análise com motor pedagógico</h4>
+                                    <p>Explicações em 3 níveis: O Que Aconteceu, Evidências e Na Prática — com dados
+                                        reais do pacote.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Servidor -->
+                    <div data-panel="servidor" style="display:none;">
+                        <div class="screenshots-grid">
+                            <div class="screenshot-card" style="grid-column: span 2;" data-lightbox>
+                                <div class="screenshot-thumb">
+                                    <div class="mockup-bar">
+                                        <div class="mockup-dot" style="background:#ff5f57;"></div>
+                                        <div class="mockup-dot" style="background:#ffbd2e;"></div>
+                                        <div class="mockup-dot" style="background:#28c840;"></div>
+                                        <span style="margin-left:8px;font-size:11px;color:var(--muted);">NetLab
+                                            Educacional — Servidor de Laboratório</span>
+                                    </div>
+                                    <div class="mockup-content">
+                                        <img src="assets/SERVIDOR.png" alt="Servidor de Laboratório"
+                                            style="width:100%;height:100%;object-fit:contain;">
+                                    </div>
+                                </div>
+                                <div class="screenshot-info">
+                                    <h4>Servidor HTTP de laboratório</h4>
+                                    <p>7 classes de vulnerabilidades web reais: SQLi, XSS, IDOR, CSRF e mais — em banco
+                                        de memória descartável.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Site do Servidor -->
+                    <div data-panel="site_servidor" style="display:none;">
+                        <div class="screenshots-grid">
+                            <div class="screenshot-card" style="grid-column: span 2;" data-lightbox>
+                                <div class="screenshot-thumb">
+                                    <div class="mockup-bar">
+                                        <div class="mockup-dot" style="background:#ff5f57;"></div>
+                                        <div class="mockup-dot" style="background:#ffbd2e;"></div>
+                                        <div class="mockup-dot" style="background:#28c840;"></div>
+                                        <span style="margin-left:8px;font-size:11px;color:var(--muted);">NetLab
+                                            Educacional — Site do Servidor</span>
+                                    </div>
+                                    <div class="mockup-content">
+                                        <img src="assets/SITE.png" alt="Site do Servidor"
+                                            style="width:100%;height:100%;object-fit:contain;">
+                                    </div>
+                                </div>
+                                <div class="screenshot-info">
+                                    <h4>Site do Servidor</h4>
+                                    <p>Exibição do site de laboratório vulnerável gerado internamente pelo servidor.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+            </section>
+
+            <!-- ══════════ REQUISITOS ══════════ -->
+            <section class="section animate-in delay-2" id="requisitos" aria-labelledby="sec-req">
+                <div class="section-header">
+                    <span class="eyebrow">Pré-requisitos</span>
+                    <h2 id="sec-req">O que você precisa</h2>
+                    <p>Requisitos de sistema e software para executar o NetLab.</p>
+                </div>
+                <div class="requirements-grid">
+                    <div class="req-card">
+                        <div class="req-icon" aria-hidden="true">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                                <line x1="8" y1="21" x2="16" y2="21" />
+                                <line x1="12" y1="17" x2="12" y2="21" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4>Windows 10 ou 11</h4>
+                            <p>Sistema operacional principal. O fluxo foi projetado e testado em Windows. Alguns
+                                componentes também funcionam em Linux.</p>
+                        </div>
+                    </div>
+                    <div class="req-card">
+                        <div class="req-icon" aria-hidden="true">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="16 18 22 12 16 6" />
+                                <polyline points="8 6 2 12 8 18" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4>Python 3.11+</h4>
+                            <p>Recomendado usar a versão mais recente do Python 3. O instalador empacota as dependências
+                                necessárias.</p>
+                        </div>
+                    </div>
+                    <div class="req-card">
+                        <div class="req-icon" aria-hidden="true">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m18 10 4 4-4 4" />
+                                <path d="M2 10v4" />
+                                <path d="M22 14H10" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4>Npcap</h4>
+                            <p>Driver de captura de pacotes para Windows. Instale com o modo <em>"WinPcap API-compatible
+                                    Mode"</em> ativado.</p>
+                        </div>
+                    </div>
+                    <div class="req-card">
+                        <div class="req-icon" aria-hidden="true">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h4>Privilégios de administrador</h4>
+                            <p>A captura de pacotes requer execução como administrador. O NetLab detecta e avisa se a
+                                permissão estiver ausente.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════ INSTALAÇÃO ══════════ -->
+            <section class="section animate-in delay-2" id="instalacao" aria-labelledby="sec-inst">
+                <div class="section-header">
+                    <span class="eyebrow">Como instalar</span>
+                    <h2 id="sec-inst">Passo a passo rápido</h2>
+                    <p>Da instalação do Python até a primeira captura.</p>
+                </div>
+                <div class="card" style="padding:28px;">
+                    <ol class="steps-list">
+                        <li>
+                            <span class="step-number" aria-hidden="true">1</span>
+                            <div class="step-content">
+                                <h4>Instale o Npcap</h4>
+                                <p>Baixe e instale o Npcap em <a href="https://npcap.com" target="_blank"
+                                        rel="noopener">npcap.com</a>. Durante a instalação, é obrigatório marcar a
+                                    opção:
+                                    <strong>"Install Npcap in WinPcap API-compatible Mode"</strong>.
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="step-number" aria-hidden="true">2</span>
+                            <div class="step-content">
+                                <h4>Execute o Instalador</h4>
+                                <p>Clique no botão <strong>Baixar o instalador</strong> no topo da página para obter o
+                                    <code>NetLab_Educacional_v5.0.0.exe</code>.
+                                    Abra o arquivo e siga as instruções na tela para concluir a instalação no seu
+                                    computador.
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <span class="step-number" aria-hidden="true">3</span>
+                            <div class="step-content">
+                                <h4>Inicie como Administrador</h4>
+                                <p>Após a instalação, localize o atalho do <strong>NetLab Educacional</strong> na sua
+                                    área de trabalho ou menu iniciar.
+                                    Clique com o botão direito e selecione <strong>"Executar como
+                                        administrador"</strong> para permitir a captura de pacotes.</p>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </section>
+
+            <!-- ══════════ FAQ ══════════ -->
+            <section class="section animate-in delay-3" id="faq" aria-labelledby="sec-faq">
+                <div class="section-header">
+                    <span class="eyebrow">Dúvidas frequentes</span>
+                    <h2 id="sec-faq">Perguntas e respostas</h2>
+                    <p>As dúvidas mais comuns antes de instalar o NetLab.</p>
+                </div>
+                <div class="faq-list" role="list">
+
+                    <div class="faq-item" role="listitem">
+                        <button class="faq-question" aria-expanded="false">
+                            O antivírus vai bloquear o instalador?
+                            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                É possível que sim — isso é um falso positivo comum em executáveis gerados pelo
+                                PyInstaller, que empacota Python junto com o programa. O código-fonte completo está
+                                disponível no <a href="https://github.com/Yurigonpav/NetLab-Educacional" target="_blank"
+                                    rel="noopener">GitHub</a> para auditoria. Se o seu antivírus bloquear, adicione
+                                o arquivo como exceção ou rode diretamente pelo código-fonte.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item" role="listitem">
+                        <button class="faq-question" aria-expanded="false">
+                            O NetLab precisa de conexão com a internet?
+                            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                Não. O NetLab funciona completamente offline após a instalação. A única exceção é a
+                                atualização automática do banco de fabricantes OUI (identificação de dispositivos por
+                                MAC), que ocorre em background quando há internet disponível — mas não é obrigatória.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item" role="listitem">
+                        <button class="faq-question" aria-expanded="false">
+                            Funciona em redes Wi-Fi?
+                            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                Sim, com uma limitação importante: o Windows não expõe modo promíscuo em adaptadores
+                                Wi-Fi, então você verá apenas o tráfego do próprio computador. Para capturar o tráfego
+                                de toda a turma em sala de aula, ative o <strong>Hotspot Móvel</strong> do Windows no
+                                computador com o NetLab e conecte os outros dispositivos nele — assim todo o tráfego
+                                passa pelo adaptador e fica visível.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item" role="listitem">
+                        <button class="faq-question" aria-expanded="false">
+                            Por que precisa de permissão de administrador?
+                            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                O driver Npcap — responsável pela captura de pacotes em baixo nível — exige privilégios
+                                de administrador no Windows para acessar as interfaces de rede. Sem essa permissão, o
+                                NetLab não consegue abrir o socket de captura. O sistema detecta automaticamente se a
+                                permissão está ausente e exibe um aviso na tela de diagnóstico.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item" role="listitem">
+                        <button class="faq-question" aria-expanded="false">
+                            O servidor vulnerável é perigoso para o meu computador?
+                            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                Não, quando usado corretamente. O servidor roda localmente na sua rede, não tem acesso
+                                ao sistema operacional (sem <code
+                                    style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px;color:#b7ffcf;">subprocess</code>,
+                                <code
+                                    style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px;color:#b7ffcf;">eval</code>
+                                ou <code
+                                    style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px;color:#b7ffcf;">exec</code>),
+                                e usa banco de dados exclusivamente em memória — tudo é descartado ao parar. O único
+                                risco real é <strong>expô-lo à internet</strong>, o que jamais deve ser feito.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item" role="listitem">
+                        <button class="faq-question" aria-expanded="false">
+                            Posso usar o NetLab para capturar tráfego de outras pessoas?
+                            <svg class="faq-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                        <div class="faq-answer">
+                            <div class="faq-answer-inner">
+                                Não. O NetLab foi desenvolvido <strong>exclusivamente para uso em redes próprias ou com
+                                    consentimento explícito de todos os participantes</strong>. Capturar tráfego de
+                                terceiros sem autorização é ilegal em praticamente todos os países e viola a privacidade
+                                das pessoas. Use apenas em laboratórios, redes de teste ou ambientes controlados onde
+                                você tem permissão.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ══════════ ARTIGO CIENTÍFICO ══════════ -->
+            <section class="section animate-in delay-3" id="artigo" aria-labelledby="sec-artigo">
+                <div class="card" style="padding:28px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+                        <div style="flex:1;min-width:260px;">
+                            <span class="hero-eyebrow" style="margin-bottom:10px;">Publicação acadêmica</span>
+                            <h2 id="sec-artigo" style="font-size:clamp(20px,2.5vw,26px);margin-bottom:8px;">
+                                Artigo científico
+                            </h2>
+                            <p style="color:var(--muted);font-size:14px;line-height:1.6;max-width:54ch;">
+                                O NetLab Educacional foi documentado em artigo científico submetido ao periódico
+                                <strong style="color:var(--text);">RENOTE — Revista de Ciência e Inovação</strong>
+                                (ISSN 2448-4091), abrangendo arquitetura do sistema, motor pedagógico e validação
+                                funcional no laboratório do IFFar Campus Uruguaiana.
+                            </p>
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+                                <a href="site do artigo" target="_blank" rel="noopener noreferrer" class="btn-ghost"
+                                    style="min-height:42px;font-size:14px;padding:10px 20px;">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                        aria-hidden="true">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                        <line x1="16" y1="13" x2="8" y2="13" />
+                                        <line x1="16" y1="17" x2="8" y2="17" />
+                                    </svg>
+                                    Ler o artigo completo
+                                </a>
+                            </div>
+                        </div>
+                        <div
+                            style="padding:20px 24px;border-radius:var(--radius-md);border:1px solid var(--line);background:rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:10px;min-width:220px;">
+                            <div>
+
+                                <div>
+
+                                    <div>
+                                        <div
+                                            style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.10em;margin-bottom:3px;">
+                                            Autor</div>
+                                        <div style="font-size:14px;color:var(--text);">Yuri Gonçalves Pavão</div>
+                                    </div>
+                                    <div>
+                                        <div
+                                            style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.10em;margin-bottom:3px;">
+                                            Orientadores</div>
+                                        <div style="font-size:13px;color:var(--muted);">Prof. João Carlos &amp; Prof.
+                                            Michel
+                                            Michelon</div>
+                                    </div>
+                                    <div>
+                                        <div
+                                            style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.10em;margin-bottom:3px;">
+                                            Ano</div>
+                                        <div style="font-size:14px;color:var(--text);">2026</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            </section>
+
+            <!-- ══════════ SOBRE O AUTOR ══════════ -->
+            <section class="section animate-in delay-3" id="autor" aria-labelledby="sec-autor">
+                <div class="section-header">
+                    <span class="eyebrow">Quem desenvolveu</span>
+                    <h2 id="sec-autor">Sobre o autor</h2>
+                </div>
+                <div class="author-card">
+                    <div class="author-avatar" aria-hidden="true">
+                        <img src="assets/Foto.jpg" alt="Yuri Gonçalves Pavão">
+                    </div>
+                    <div class="author-info">
+                        <div class="author-role">Desenvolvedor</div>
+                        <div class="author-name">Yuri Gonçalves Pavão</div>
+                        <div class="author-school">Instituto Federal Farroupilha — Campus Uruguaiana</div>
+                        <div class="author-course">Curso Técnico em Informática Integrado ao Ensino Médio</div>
+                        <div class="author-links">
+                            <a href="https://github.com/Yurigonpav" target="_blank" rel="noopener noreferrer"
+                                class="author-link highlight-link">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                    <path
+                                        d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.605-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.295 24 12c0-6.63-5.37-12-12-12z" />
+                                </svg>
+                                @Yurigonpav
+                            </a>
+                            <a href="https://instagram.com/yuri_g0n" target="_blank" rel="noopener noreferrer"
+                                class="author-link">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                                </svg>
+                                @yuri_g0n
+                            </a>
+                            <a href="https://iffarroupilha.edu.br/uruguaiana" target="_blank" rel="noopener noreferrer"
+                                class="author-link">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                                </svg>
+                                IFFar — Uruguaiana
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════ AVISO ÉTICO ══════════ -->
+            <section class="section animate-in delay-3" aria-labelledby="sec-aviso">
+                <div class="aviso-box" role="alert">
+                    <span class="aviso-icon" aria-hidden="true">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 id="sec-aviso" style="color:var(--danger);margin-bottom:6px;font-size:15px;">Aviso ético
+                            importante</h3>
+                        <p>
+                            O NetLab Educacional foi desenvolvido <strong>exclusivamente para ensino, demonstração e
+                                pesquisa em ambientes autorizados</strong>. O servidor vulnerável implementa falhas
+                            reais por finalidade didática e <strong>jamais deve ser exposto à Internet</strong>.
+                            Não utilize as técnicas demonstradas contra sistemas reais sem permissão explícita.
+                            Capture tráfego apenas de redes próprias ou com consentimento dos participantes.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ══════════ DOAÇÕES / PIX ══════════ -->
+            <section class="section animate-in delay-4" id="apoie" aria-labelledby="sec-pix">
+                <div class="pix-card">
+                    <div class="pix-text">
+                        <div class="pix-eyebrow">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path
+                                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                            Apoie o projeto
+                        </div>
+                        <h2 id="sec-pix">Gostou do NetLab?</h2>
+                        <p>
+                            O NetLab Educacional é gratuito, de código aberto e foi desenvolvido com muito estudo e
+                            dedicação. Se o projeto te ajudou em sala de aula, em um trabalho ou no aprendizado de
+                            redes, considere fazer uma doação — qualquer valor ajuda a manter o desenvolvimento ativo.
+                        </p>
+                        <div class="pix-key-block">
+                            <span class="pix-key-label">Chave Pix</span>
+                            <span class="pix-key-value" id="pix-key-text">
+                                <!--
+                                    SUBSTITUIR: coloque aqui a sua chave Pix real.
+                                    Exemplo: yuri@email.com  ou  CPF: 000.000.000-00
+                                -->
+                                yurigon135@gmail.com
+                            </span>
+                            <button class="pix-copy-btn" id="pix-copy-btn" aria-label="Copiar chave Pix">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                    aria-hidden="true">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span id="pix-copy-label">Copiar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pix-qr" aria-label="QR Code do Pix">
+                        <div class="pix-qr-box">
+                            <img src="assets/QrPix.png" alt="QR Code Pix — Yuri Gonçalves Pavão">
+                        </div>
+                        <div class="pix-qr-label">Escaneie para doar</div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- ═══════════ FOOTER ═══════════ -->
+        <footer class="site-footer" role="contentinfo">
+            <div class="footer-links">
+                <a href="https://github.com/Yurigonpav/NetLab-Educacional" target="_blank"
+                    rel="noopener noreferrer">GitHub</a>
+                <a href="download/NetLab_Educacional_v5.0.0.exe"
+                    target="_blank" rel="noopener noreferrer">Releases</a>
+                <a href="#artigo">Artigo</a>
+                <a href="https://instagram.com/yuri_g0n" target="_blank" rel="noopener noreferrer">Instagram</a>
+                <a href="https://iffarroupilha.edu.br/uruguaiana" target="_blank" rel="noopener noreferrer">IFFar —
+                    Uruguaiana</a>
+            </div>
+            <p>
+                Desenvolvido por <strong>Yuri Gonçalves Pavão</strong> —
+                Trabalho de Conclusão de Curso Técnico em Informática<br>
+                Instituto Federal Farroupilha, Campus Uruguaiana • © 2026
+            </p>
+            <p style="margin-top:8px;font-size:11px;opacity:0.7;">
+                Este projeto é distribuído com finalidade educacional. Use apenas em ambientes autorizados.
+            </p>
+        </footer>
+    </div>
+
+    <!-- Dialog / Lightbox para screenshots -->
+    <dialog class="lightbox" id="lightbox" aria-modal="true" aria-label="Visualizar screenshot em tamanho maior">
+        <div class="lightbox-inner">
+            <button class="lightbox-close" id="lightbox-close" aria-label="Fechar">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <img id="lightbox-img" src="" alt="">
+            <p id="lightbox-caption" style="color:var(--muted);font-size:13px;text-align:center;margin-top:12px;"></p>
+        </div>
+    </dialog>
+
+    <script>
+        /* ── Rolagem suave ──────────────────────── */
+        document.querySelectorAll('a[href^="#"]').forEach(function (link) {
+            link.addEventListener('click', function (e) {
+                var targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                var target = document.querySelector(targetId);
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    try {
+                        if (history.pushState) history.pushState(null, null, targetId);
+                    } catch (err) { }
+                    target.setAttribute('tabindex', '-1');
+                    target.focus({ preventScroll: true });
+                }
+            });
+        });
+
+        /* ── Botão de download ──────────────────── */
+        var btnDownload = document.getElementById('btn-download-principal');
+        if (btnDownload) {
+            btnDownload.addEventListener('click', function () {
+                console.log('Download iniciado: NetLab_Educacional_v5.0.0.exe');
+            });
+        }
+
+        /* ── Abas da galeria ────────────────────── */
+        var tabBtns = document.querySelectorAll('.media-tab-btn');
+        var panels = document.querySelectorAll('#gallery-panel [data-panel]');
+
+        tabBtns.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var target = this.getAttribute('data-tab');
+
+                tabBtns.forEach(function (b) {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-selected', 'false');
+                });
+                this.classList.add('active');
+                this.setAttribute('aria-selected', 'true');
+
+                panels.forEach(function (p) {
+                    p.style.display = p.getAttribute('data-panel') === target ? '' : 'none';
+                });
+            });
+        });
+
+        /* ── FAQ accordion ──────────────────────── */
+        var faqItems = document.querySelectorAll('.faq-item');
+
+        faqItems.forEach(function (item) {
+            var btn = item.querySelector('.faq-question');
+            var answer = item.querySelector('.faq-answer');
+
+            btn.addEventListener('click', function () {
+                var isOpen = item.classList.contains('open');
+
+                // Fecha todos
+                faqItems.forEach(function (i) {
+                    i.classList.remove('open');
+                    i.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+                    i.querySelector('.faq-answer').style.maxHeight = '0';
+                });
+
+                // Abre o clicado se estava fechado
+                if (!isOpen) {
+                    item.classList.add('open');
+                    btn.setAttribute('aria-expanded', 'true');
+                    answer.style.maxHeight = answer.scrollHeight + 'px';
+                }
+            });
+        });
+
+        /* ── Copiar chave Pix ───────────────────── */
+        var pixCopyBtn = document.getElementById('pix-copy-btn');
+        var pixKeyText = document.getElementById('pix-key-text');
+        var pixCopyLabel = document.getElementById('pix-copy-label');
+
+        if (pixCopyBtn && pixKeyText) {
+            pixCopyBtn.addEventListener('click', function () {
+                var key = pixKeyText.textContent.trim();
+                navigator.clipboard.writeText(key).then(function () {
+                    pixCopyBtn.classList.add('copied');
+                    pixCopyLabel.textContent = 'Copiado!';
+                    setTimeout(function () {
+                        pixCopyBtn.classList.remove('copied');
+                        pixCopyLabel.textContent = 'Copiar';
+                    }, 2500);
+                }).catch(function () {
+                    // Fallback para navegadores sem clipboard API
+                    var ta = document.createElement('textarea');
+                    ta.value = key;
+                    ta.style.position = 'fixed';
+                    ta.style.opacity = '0';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    pixCopyLabel.textContent = 'Copiado!';
+                    setTimeout(function () { pixCopyLabel.textContent = 'Copiar'; }, 2500);
+                });
+            });
+        }
+
+        /* ── Lightbox para screenshots ──────────── */
+        var lightbox = document.getElementById('lightbox');
+        var lightboxImg = document.getElementById('lightbox-img');
+        var lightboxCaption = document.getElementById('lightbox-caption');
+        var lightboxClose = document.getElementById('lightbox-close');
+
+        document.querySelectorAll('.screenshot-card[data-lightbox]').forEach(function (card) {
+            card.addEventListener('click', function () {
+                var img = card.querySelector('img');
+                var caption = card.querySelector('.screenshot-info h4');
+                if (img && lightbox) {
+                    lightboxImg.src = img.src;
+                    lightboxImg.alt = img.alt;
+                    lightboxCaption.textContent = caption ? caption.textContent : '';
+                    lightbox.showModal();
+                }
+            });
+        });
+
+        if (lightboxClose) {
+            lightboxClose.addEventListener('click', function () {
+                lightbox.close();
+            });
+        }
+
+        if (lightbox) {
+            lightbox.addEventListener('click', function (e) {
+                if (e.target === lightbox) lightbox.close();
+            });
+
+            lightbox.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') lightbox.close();
+            });
+        }
+
+        console.log('%cNetLab Educacional %c— Site carregado.',
+            'color:#5ec6ff;font-size:16px;font-weight:bold;', 'color:#9cb5d1;');
+        console.log('%cUse apenas em ambientes autorizados.',
+            'color:#ff8d8d;font-size:12px;');
+    </script>
+</body>
+
+</html>

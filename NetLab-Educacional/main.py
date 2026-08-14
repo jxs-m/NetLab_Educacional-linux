@@ -1,0 +1,64 @@
+# main.py
+# Ponto de entrada do NetLab Educacional.
+# Inicializa a aplicação Qt, aplica o tema visual e abre a janela principal.
+
+import sys
+import os
+
+from PyQt6.QtWidgets import QApplication, QStyleFactory
+from PyQt6.QtGui import QIcon
+
+# Helper to resolve resource paths both in development and when bundled with PyInstaller
+def resource_path(relative_path):
+    """Return absolute path for resources, works with PyInstaller's temp folder."""
+    try:
+        base_path = sys._MEIPASS  # PyInstaller creates a temp folder and stores path in this attribute
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+from interface.janela_principal import JanelaPrincipal
+
+
+
+def iniciar_aplicacao():
+    """Configura e inicializa toda a aplicação."""
+
+    # Necessário antes de criar QApplication no Windows com HiDPI
+    os.environ.setdefault("QT_AUTO_SCREEN_SCALE_FACTOR", "1")
+
+    app = QApplication(sys.argv)
+
+    # Forçar estilo Fusion para consistência entre ambientes
+    app.setStyle(QStyleFactory.create("Fusion"))
+
+    # Metadados da aplicação
+    app.setApplicationName("NetLab Educacional")
+    app.setApplicationVersion("5.0")
+    app.setOrganizationName("TCC - Técnico em Informática - Yuri Gonçalves Pavão")
+
+    # Definir o ícone da aplicação (janela e barra de tarefas)
+    caminho_icone = resource_path("icone.ico")
+    if os.path.exists(caminho_icone):
+        app.setWindowIcon(QIcon(caminho_icone))
+
+    # Carregar folha de estilos personalizada (tema escuro) usando recurso_path
+    # Load dark theme stylesheet using resource_path (works in bundled exe)
+    qss_path = resource_path(os.path.join("recursos", "estilos", "tema_escuro.qss"))
+    if os.path.exists(qss_path):
+        with open(qss_path, "r", encoding="utf-8") as arquivo:
+            app.setStyleSheet(arquivo.read())
+        print(f"Estilo carregado de: {qss_path}")
+    else:
+        print(f"ERRO: Arquivo de estilo não encontrado em {qss_path}")
+        print("   Verifique se a pasta 'recursos' foi incluída no build.")
+
+    # Criar e exibir a janela principal
+    janela = JanelaPrincipal()
+    janela.show()
+
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    iniciar_aplicacao()
